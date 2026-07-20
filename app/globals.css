@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-sans), sans-serif;
+  --font-display: var(--font-display), sans-serif;
+  --font-mono: var(--font-mono), monospace;
+}
+
+@layer utilities {
+  .font-sans {
+    font-family: var(--font-sans), sans-serif;
+  }
+  .font-display {
+    font-family: var(--font-display), sans-serif;
+  }
+  .font-mono {
+    font-family: var(--font-mono), monospace;
+  }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.8); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(0.8); opacity: 0; }
+}
+
+@keyframes fade-in-down {
+  0% { opacity: 0; transform: translate(-50%, -10px); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes wave-anim {
+  0% { transform: scaleY(0.5); }
+  100% { transform: scaleY(1.2); }
+}
+
+.pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.pulse-dot {
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.wave-bar {
+  animation: wave-anim 0.8s ease-in-out infinite alternate;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Custom visual styling */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+.scenario-card-gradient-1 {
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.03) 0%, rgba(0, 240, 255, 0.05) 100%);
+}
+
+.scenario-card-gradient-2 {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(168, 85, 247, 0.05) 100%);
+}
+
+.scenario-card-gradient-3 {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.03) 0%, rgba(217, 70, 239, 0.05) 100%);
+}
+

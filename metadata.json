@@ -1,0 +1,6 @@
+{
+  "name": "PolyGlot Live",
+  "description": "Speak any language fluently through live AI voice roleplay, with real-time grammar feedback and vocabulary parsing powered by Gemini.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
