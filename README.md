@@ -23,6 +23,10 @@ This is the **only** public repo for the project.
 
 ## Screenshots
 
+<p align="center">
+  <img src="docs/social-preview.png" alt="PolyGlot Live" width="800">
+</p>
+
 | Passport hub | Briefing |
 |--------------|----------|
 | ![Mobile passport hub with three Spanish scenarios](docs/screenshots/01-passport-hub.png) | ![Tapas briefing with objectives and vocab](docs/screenshots/02-scenario-briefing.png) |
