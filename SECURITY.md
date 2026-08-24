@@ -19,7 +19,7 @@
 | Payments | **N/A** | No payments |
 | Gemini | **Optional** | Missing key → canned demo replies. Key stays server-side |
 
-**Overall (public Vercel demo):** Low residual risk for a hiring-manager walkthrough. Do not treat the live Gemini path as a production language-school backend.
+**Overall (public Vercel demo):** Low residual risk for a public demo walkthrough. Do not treat the live Gemini path as a production language-school backend.
 
 ---
 
