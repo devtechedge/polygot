@@ -5,3 +5,11 @@ coverage/
 *.log
 .env*
 !.env.example
+playwright-report/
+test-results/
+blob-report/
+*.tsbuildinfo
+.vercel
+.turbo
+.idea/
+.vscode/
