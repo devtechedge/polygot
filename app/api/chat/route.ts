@@ -1,34 +1,31 @@
-import { GoogleGenAI, Type } from "@google/genai";
-import { NextRequest, NextResponse } from "next/server";
+import { GoogleGenAI, Type } from '@google/genai'
+import { NextRequest, NextResponse } from 'next/server'
+import { demoChatReply } from '@/lib/demo-chat'
+import { parseChatRequest } from '@/lib/validation'
 
-// Initialize the Google GenAI SDK with server-side API Key
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "",
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
+export const runtime = 'nodejs'
+
+function geminiClient() {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) return null
+  return new GoogleGenAI({ apiKey })
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const { 
-      messages, 
-      scenarioTitle, 
-      hostName, 
-      dialect, 
-      userLevel,
-      voiceSpeed 
-    } = await req.json();
-
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({
-        error: "GEMINI_API_KEY is not configured in the workspace secrets. Please add it to Settings > Secrets."
-      }, { status: 500 });
+    const body = await req.json().catch(() => null)
+    const parsed = parseChatRequest(body)
+    if ('error' in parsed) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
 
-    // Build the instruction based on scenario context
+    const ai = geminiClient()
+    if (!ai) {
+      return NextResponse.json(demoChatReply(parsed))
+    }
+
+    const { messages, scenarioTitle, hostName, dialect, userLevel, voiceSpeed } = parsed
+
     const systemInstruction = `
 You are an advanced live speech roleplay assistant for language learning.
 You are playing the role of ${hostName}, the AI Host for the scenario: "${scenarioTitle}".
@@ -42,95 +39,77 @@ ROLEPLAY RULES:
 3. Ensure your pronunciation key is in the correct International Phonetic Alphabet (IPA).
 
 GRAMMAR FEEDBACK RULES:
-1. Closely analyze the user's last message for any grammatical, conjugation, or gender agreement errors (e.g., using "un copa" instead of "una copa", "tengo hambre" errors, wrong verb conjugations).
-2. If an error is detected, populate the 'grammarCorrection' field. Do not be overly pedantic for advanced levels, but be helpful for beginners. If no error is found, set 'grammarCorrection' to null.
+1. Closely analyze the user's last message for any grammatical, conjugation, or gender agreement errors.
+2. If an error is detected, populate the 'grammarCorrection' field. If no error is found, set 'grammarCorrection' to null.
 
 VOCABULARY PARSING:
-1. Identify 1 to 3 key Spanish vocabulary words or food/drinks item names mentioned in this turn, provide their English translation, and correct IPA phonetics.
+1. Identify 1 to 3 key Spanish vocabulary words mentioned in this turn, provide their English translation, and correct IPA phonetics.
 
 You MUST respond strictly in the requested JSON format.
-`;
+`
 
-    // Map history to Gemini content parts
-    // We send the system instruction inside the config block
-    const prompt = messages && messages.length > 0 
-      ? `Conversation History:\n${messages.map((m: any) => `${m.sender === 'MATEO' ? 'Mateo' : 'User'}: ${m.text}`).join('\n')}\n\nMateo, respond to the user's last statement and analyze their grammar.`
-      : "Start the conversation by welcoming the user to 'El Sur' and asking what they would like to drink or eat.";
+    const prompt =
+      messages.length > 0
+        ? `Conversation History:\n${messages
+            .map((m) => `${m.sender === 'YOU' ? 'User' : hostName}: ${m.text}`)
+            .join('\n')}\n\n${hostName}, respond to the user's last statement and analyze their grammar.`
+        : `Start the conversation by welcoming the user to the scenario "${scenarioTitle}".`
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         systemInstruction,
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             hostResponse: {
               type: Type.STRING,
-              description: "The host's natural spoken response in Spanish."
+              description: "The host's natural spoken response in Spanish.",
             },
             ipaPhonetic: {
               type: Type.STRING,
-              description: "The correct IPA pronunciation key for the host's response, e.g. /ˈo.la/ /bjem.beˈni.dos/."
+              description: "IPA pronunciation key for the host's response.",
             },
             translation: {
               type: Type.STRING,
-              description: "The exact English translation of the host's response."
+              description: "English translation of the host's response.",
             },
             grammarCorrection: {
               type: Type.OBJECT,
-              description: "Optional. Set if the user made a clear grammatical/gender/conjugation mistake in their last message. If no mistake, set to null.",
+              description: 'Set if the user made a clear grammar mistake; otherwise null.',
               properties: {
-                original: {
-                  type: Type.STRING,
-                  description: "The exact incorrect word or phrase used by the user, e.g., 'un copa'."
-                },
-                correction: {
-                  type: Type.STRING,
-                  description: "The correct word or phrase they should have used, e.g., 'una copa'."
-                },
-                explanation: {
-                  type: Type.STRING,
-                  description: "Brief, high-impact explanation of why it was wrong, e.g., 'una copa (feminine) instead of un copa'."
-                }
+                original: { type: Type.STRING },
+                correction: { type: Type.STRING },
+                explanation: { type: Type.STRING },
               },
-              required: ["original", "correction", "explanation"]
+              required: ['original', 'correction', 'explanation'],
             },
             detectedVocabulary: {
               type: Type.ARRAY,
-              description: "Array of key vocabulary terms detected in this turn.",
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  word: {
-                    type: Type.STRING,
-                    description: "Spanish word or phrase, e.g. 'Vino tinto'"
-                  },
-                  translation: {
-                    type: Type.STRING,
-                    description: "English translation, e.g. 'Red wine'"
-                  },
-                  ipa: {
-                    type: Type.STRING,
-                    description: "IPA phonetics, e.g. /ˈbi.no ˈtin.to/"
-                  }
+                  word: { type: Type.STRING },
+                  translation: { type: Type.STRING },
+                  ipa: { type: Type.STRING },
                 },
-                required: ["word", "translation", "ipa"]
-              }
-            }
+                required: ['word', 'translation', 'ipa'],
+              },
+            },
           },
-          required: ["hostResponse", "ipaPhonetic", "translation", "detectedVocabulary"]
-        }
-      }
-    });
+          required: ['hostResponse', 'ipaPhonetic', 'translation', 'detectedVocabulary'],
+        },
+      },
+    })
 
-    const resultText = response.text || "{}";
-    return NextResponse.json(JSON.parse(resultText));
-  } catch (error: any) {
-    console.error("Error in /api/chat route:", error);
-    return NextResponse.json({
-      error: error.message || "An error occurred while generating content."
-    }, { status: 500 });
+    const resultText = response.text || '{}'
+    const parsedJson = JSON.parse(resultText)
+    return NextResponse.json({ ...parsedJson, demo: false })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An error occurred while generating content.'
+    console.error('Error in /api/chat route:', error)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

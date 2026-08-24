@@ -27,92 +27,10 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-// Define Scenarios Schema
-interface Scenario {
-  id: string;
-  title: string;
-  goal: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
-  duration: string;
-  hostName: string;
-  hostRole: string;
-  hostImage: string;
-  bgGradientClass: string;
-  objectives: string[];
-  keyVocab: {
-    word: string;
-    ipa: string;
-    meaning: string;
-  }[];
-}
-
-const SCENARIOS: Scenario[] = [
-  {
-    id: 'tapas',
-    title: 'Ordering Tapas at El Sol',
-    goal: 'Order food & drinks',
-    level: 'Beginner',
-    duration: '5m',
-    hostName: 'Mateo',
-    hostRole: 'Host at El Sol, Madrid',
-    hostImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&q=80',
-    bgGradientClass: 'scenario-card-gradient-1',
-    objectives: [
-      'Greet the host politely',
-      'Order standard tapas (Patatas bravas) and red wine (Vino tinto)',
-      'Ask for the bill (La cuenta, por favor)'
-    ],
-    keyVocab: [
-      { word: 'Me gustaría...', ipa: '/me ɣus.ta.ˈri.a/', meaning: 'I would like...' },
-      { word: 'La cuenta, por favor', ipa: '/la ˈkwen.ta poɾ fa.ˈβoɾ/', meaning: 'The bill, please' },
-      { word: 'Patatas bravas', ipa: '/pa.ˈta.tas ˈbɾa.βas/', meaning: 'Spicy fried potatoes' },
-      { word: 'Vino tinto', ipa: '/ˈbi.no ˈtin.to/', meaning: 'Red wine' }
-    ]
-  },
-  {
-    id: 'bicycle',
-    title: 'Renting a Bicycle in Barcelona',
-    goal: 'Inquire about rates & equipment',
-    level: 'Intermediate',
-    duration: '10m',
-    hostName: 'Elena',
-    hostRole: 'Rental Manager, Barcelona',
-    hostImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&q=80',
-    bgGradientClass: 'scenario-card-gradient-2',
-    objectives: [
-      'Inquire about standard bicycle rental rates',
-      'Ask about safety helmets (Casco)',
-      'Verify if the brakes (Frenos) are tested'
-    ],
-    keyVocab: [
-      { word: '¿Cuánto cuesta alquilar...?', ipa: '/ˈkwan.to ˈkwes.ta al.ki.ˈlaɾ/', meaning: 'How much does it cost to rent...?' },
-      { word: 'Casco', ipa: '/ˈkas.ko/', meaning: 'Helmet' },
-      { word: 'Frenos', ipa: '/ˈfɾe.nos/', meaning: 'Brakes' }
-    ]
-  },
-  {
-    id: 'interview',
-    title: 'Tech Interview in Tokyo',
-    goal: 'Discuss technical background',
-    level: 'Advanced',
-    duration: '15m',
-    hostName: 'Kenji',
-    hostRole: 'Tech Lead at NexaGroup',
-    hostImage: 'https://images.unsplash.com/photo-1489980508314-941910ded1f4?w=400&h=400&fit=crop&q=80',
-    bgGradientClass: 'scenario-card-gradient-3',
-    objectives: [
-      'Describe your software engineering experience',
-      'Discuss database design (Base de datos)',
-      'Ask questions about NexaGroup architecture'
-    ],
-    keyVocab: [
-      { word: 'Experiencia laboral', ipa: '/eks.pe.ˈɾjen.θja la.βo.ˈɾal/', meaning: 'Work experience' },
-      { word: 'Desarrollador', ipa: '/de.sa.ro.ja.ˈðoɾ/', meaning: 'Developer' },
-      { word: 'Base de datos', ipa: '/ˈba.se ðe ˈda.tos/', meaning: 'Database' }
-    ]
-  }
-];
+import { SCENARIOS, type Scenario } from '@/lib/scenarios';
+import { applyObjectives, computeFluencyScore, computeGrammarScore } from '@/lib/objectives';
+import { getWelcome } from '@/lib/welcome';
+import { getHints } from '@/lib/hints';
 
 export default function PolyGlotLive() {
   // Device & Layout toggles (User can switch between seeing standard desktop landing vs mobile app views)
@@ -257,22 +175,10 @@ export default function PolyGlotLive() {
     setSelectedScenario(scenario);
     setObjectivesCompleted({});
     
-    // Set initial greeting
-    const welcomeText = scenario.id === 'tapas'
-      ? `¡Hola! Bienvenido a El Sol. ¿Qué te gustaría tomar para empezar?`
-      : scenario.id === 'bicycle'
-      ? `¡Hola! Buenas tardes. Bienvenido a Rent-A-Bike Barcelona. ¿En qué puedo ayudarte hoy?`
-      : `¡Hola! Bienvenidos. Soy Kenji, Tech Lead. Cuéntame sobre tu experiencia en programación.`;
-
-    const welcomeIpa = scenario.id === 'tapas'
-      ? `/ˈo.la/ /bjem.beˈni.dos/`
-      : `/ˈo.la/ /bwen.as ˈtaɾ.ðes/`;
-
-    const welcomeTranslation = scenario.id === 'tapas'
-      ? 'Hello! Welcome to El Sol. What would you like to drink to start?'
-      : scenario.id === 'bicycle'
-      ? 'Hello! Good afternoon. Welcome to Rent-A-Bike Barcelona. How can I help you today?'
-      : 'Hello! Welcome. I am Kenji, Tech Lead. Tell me about your experience in programming.';
+    const welcome = getWelcome(scenario.id);
+    const welcomeText = welcome.text;
+    const welcomeIpa = welcome.ipa;
+    const welcomeTranslation = welcome.translation;
 
     setMessages([
       { sender: 'MATEO', text: welcomeText, ipa: welcomeIpa, translation: welcomeTranslation }
@@ -354,41 +260,7 @@ export default function PolyGlotLive() {
         setGrammarToasts(prev => [newToast, ...prev]);
       }
 
-      // 3. Update objectives completion if target words are matching
-      const userTextLower = speechText.toLowerCase();
-      const updatedObjectives = { ...objectivesCompleted };
-
-      if (selectedScenario.id === 'tapas') {
-        if (userTextLower.includes('hola') || userTextLower.includes('buenas')) {
-          updatedObjectives['Greet the host politely'] = true;
-        }
-        if (userTextLower.includes('bravas') || userTextLower.includes('vino') || userTextLower.includes('tinto') || userTextLower.includes('copa')) {
-          updatedObjectives['Order standard tapas (Patatas bravas) and red wine (Vino tinto)'] = true;
-        }
-        if (userTextLower.includes('cuenta') || userTextLower.includes('pagar') || userTextLower.includes('cobrar')) {
-          updatedObjectives['Ask for the bill (La cuenta, por favor)'] = true;
-        }
-      } else if (selectedScenario.id === 'bicycle') {
-        if (userTextLower.includes('cuanto') || userTextLower.includes('precio') || userTextLower.includes('alquilar')) {
-          updatedObjectives['Inquire about standard bicycle rental rates'] = true;
-        }
-        if (userTextLower.includes('casco') || userTextLower.includes('seguridad')) {
-          updatedObjectives['Ask about safety helmets (Casco)'] = true;
-        }
-        if (userTextLower.includes('frenos') || userTextLower.includes('bici')) {
-          updatedObjectives['Verify if the brakes (Frenos) are tested'] = true;
-        }
-      } else {
-        if (userTextLower.includes('experiencia') || userTextLower.includes('trabajo') || userTextLower.includes('años')) {
-          updatedObjectives['Describe your software engineering experience'] = true;
-        }
-        if (userTextLower.includes('base') || userTextLower.includes('datos') || userTextLower.includes('sql') || userTextLower.includes('mongodb')) {
-          updatedObjectives['Discuss database design (Base de datos)'] = true;
-        }
-        if (userTextLower.includes('arquitectura') || userTextLower.includes('servidor') || userTextLower.includes('nexa')) {
-          updatedObjectives['Ask questions about NexaGroup architecture'] = true;
-        }
-      }
+      const updatedObjectives = applyObjectives(selectedScenario.id, speechText, objectivesCompleted);
       setObjectivesCompleted(updatedObjectives);
 
       // 4. Update detected vocabulary chips dynamically
@@ -431,23 +303,7 @@ export default function PolyGlotLive() {
 
   // Hint suggestion generation based on current conversation objectives
   const requestHint = () => {
-    const scenarioHints = selectedScenario.id === 'tapas'
-      ? [
-          { spanish: "Me gustaría una copa de vino tinto, por favor.", english: "I would like a glass of red wine, please.", ipa: "/me ɣus.ta.'ri.a 'u.na 'ko.pa ðe 'βi.no 'tin.to por fa.'βor/" },
-          { spanish: "Hola, buenas noches. ¿Me puede traer unas patatas bravas?", english: "Hello, good evening. Can you bring me some spicy fried potatoes?", ipa: "/ˈo.la, ˈbwen.as ˈno.t͡ʃes. me ˈpwe.ðe tɾa.ˈeɾ ˈu.nas pa.ˈta.tas ˈbɾa.βas/" },
-          { spanish: "La cuenta, por favor, cuando pueda.", english: "The bill, please, when you can.", ipa: "/la ˈkwen.ta poɾ fa.ˈβoɾ, ˈkwan.ðo ˈpwe.ða/" }
-        ]
-      : selectedScenario.id === 'bicycle'
-      ? [
-          { spanish: "¿Cuánto cuesta alquilar una bicicleta por día?", english: "How much does it cost to rent a bicycle per day?", ipa: "/ˈkwan.to ˈkwes.ta al.ki.ˈlaɾ ˈu.na βi.θi.ˈkle.ta poɾ ˈði.a/" },
-          { spanish: "Necesito un casco de seguridad también, por favor.", english: "I need a safety helmet as well, please.", ipa: "/ne.θe.ˈsi.to un ˈkas.ko ðe se.ɣu.ˈɾi.ðað tam.ˈbjen, poɾ fa.ˈβoɾ/" }
-        ]
-      : [
-          { spanish: "Tengo cinco años de experiencia laboral como desarrollador.", english: "I have five years of work experience as a developer.", ipa: "/ˈteŋ.ɡo ˈθiŋ.ko ˈa.ɲos ðe eks.pe.ˈɾjen.θja la.βo.ˈɾal ˈko.mo ðe.sa.ro.ja.ˈðoɾ/" },
-          { spanish: "Tengo experiencia en el diseño de base de datos relacionales.", english: "I have experience in relational database design.", ipa: "/ˈteŋ.ɡo eks.pe.ˈɾjen.θja en el ði.ˈse.ɲo ðe ˈba.se ðe ˈda.tos/ " }
-        ];
-
-    // Pick a random hint that matches uncompleted objectives
+    const scenarioHints = getHints(selectedScenario.id);
     const hint = scenarioHints[Math.floor(Math.random() * scenarioHints.length)];
     setCurrentHint(hint);
     setCurrentView('HINT');
@@ -474,7 +330,7 @@ export default function PolyGlotLive() {
         {/* Form factor state controllers */}
         <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-full text-xs font-medium">
           <button 
-            id="mobile-view-btn"
+            id="mobile-view-btn" data-testid="device-mobile"
             onClick={() => {
               setDeviceMode('MOBILE');
               if (currentView === 'WEB_LANDING' || currentView === 'WEB_STUDIO') {
@@ -486,7 +342,7 @@ export default function PolyGlotLive() {
             📱 Mobile App Preview
           </button>
           <button 
-            id="desktop-view-btn"
+            id="desktop-view-btn" data-testid="device-desktop"
             onClick={() => {
               setDeviceMode('DESKTOP');
               setCurrentView('WEB_LANDING');
@@ -504,7 +360,7 @@ export default function PolyGlotLive() {
         {/* MOBILE VIEWPORT SIMULATOR FRAME */}
         {/* ========================================================= */}
         {deviceMode === 'MOBILE' && (
-          <div className="w-full max-w-md bg-white min-h-[760px] md:min-h-[820px] md:rounded-[40px] md:shadow-2xl md:border-[10px] md:border-slate-900 relative flex flex-col overflow-hidden font-sans">
+          <div data-testid="phone-frame" className="w-full max-w-md bg-white min-h-[760px] md:min-h-[820px] md:rounded-[40px] md:shadow-2xl md:border-[10px] md:border-slate-900 relative flex flex-col overflow-hidden font-sans">
             
             {/* Native Top Bar Status */}
             <div className="hidden md:flex justify-between items-center px-6 py-2 bg-white text-slate-400 text-xs font-mono font-medium border-b border-slate-50 select-none">
@@ -520,7 +376,7 @@ export default function PolyGlotLive() {
 
               {/* 1. SCENARIO HUB & PASSPORT VIEW */}
               {currentView === 'HUB' && (
-                <div id="view-hub" className="flex-1 flex flex-col pb-24">
+                <div id="view-hub" data-testid="passport-hub" className="flex-1 flex flex-col pb-24">
                   {/* Top Bar */}
                   <div className="flex justify-between items-center px-6 py-4 border-b border-slate-50">
                     <div className="flex items-center gap-3">
@@ -595,6 +451,7 @@ export default function PolyGlotLive() {
                       {SCENARIOS.map((scenario) => (
                         <article 
                           key={scenario.id}
+                          data-testid={`scenario-${scenario.id}`}
                           onClick={() => {
                             setSelectedScenario(scenario);
                             setCurrentView('BRIEFING');
@@ -656,7 +513,7 @@ export default function PolyGlotLive() {
 
               {/* 6. PRE-SCENARIO BRIEFING SHEET */}
               {currentView === 'BRIEFING' && (
-                <div id="view-briefing" className="flex-1 flex flex-col p-6 pb-24">
+                <div id="view-briefing" data-testid="scenario-briefing" className="flex-1 flex flex-col p-6 pb-24">
                   <button 
                     onClick={() => setCurrentView('HUB')}
                     className="self-start flex items-center gap-2 text-slate-400 hover:text-slate-600 text-sm font-semibold mb-6 transition-colors"
@@ -721,6 +578,7 @@ export default function PolyGlotLive() {
                   {/* Start Button Fixed at Bottom */}
                   <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-white via-white/95 to-transparent pt-12 z-20">
                     <button 
+                      data-testid="start-conversation"
                       onClick={() => startScenario(selectedScenario)}
                       className="w-full bg-gradient-to-r from-[#0066FF] to-[#00F0FF] text-white font-display font-bold text-sm py-4 rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
                     >
@@ -733,7 +591,7 @@ export default function PolyGlotLive() {
 
               {/* 2. REAL-TIME ROLEPLAY HUD & TRANSCRIPT DRAWER */}
               {currentView === 'HUD' && (
-                <div id="view-hud" className="flex-1 flex flex-col relative bg-slate-50">
+                <div id="view-hud" data-testid="live-hud" className="flex-1 flex flex-col relative bg-slate-50">
                   {/* Real-time floating grammar toast banner inside HUD view */}
                   <AnimatePresence>
                     {grammarToasts.length > 0 && (
@@ -888,7 +746,8 @@ export default function PolyGlotLive() {
                   {isTypingInputMode && (
                     <div className="bg-white border-t border-slate-100 p-3 flex gap-2">
                       <input 
-                        type="text" 
+                        type="text"
+                        data-testid="typed-input"
                         value={typedInputText}
                         onChange={(e) => setTypedInputText(e.target.value)}
                         placeholder="Type response in Spanish..." 
@@ -902,6 +761,7 @@ export default function PolyGlotLive() {
                         }}
                       />
                       <button 
+                        data-testid="send-typed"
                         onClick={() => {
                           handleUserSpeech(typedInputText);
                           setTypedInputText('');
@@ -917,10 +777,19 @@ export default function PolyGlotLive() {
                   {/* Controls Bar */}
                   <div className="bg-white border-t border-slate-100 py-4 px-6 flex justify-between items-center z-10 select-none">
                     <button 
+                      data-testid="mute-toggle"
                       onClick={() => setIsMuted(!isMuted)}
                       className={`p-3 rounded-full border border-slate-100 shadow-sm transition-colors ${isMuted ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-500 hover:text-slate-700'}`}
                     >
                       {isMuted ? <MicOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                    </button>
+
+                    <button
+                      data-testid="type-toggle"
+                      onClick={() => setIsTypingInputMode((v) => !v)}
+                      className={`p-3 rounded-full border border-slate-100 shadow-sm text-[10px] font-mono font-bold uppercase tracking-wider ${isTypingInputMode ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-500 hover:text-slate-700'}`}
+                    >
+                      Type
                     </button>
 
                     <button 
@@ -936,6 +805,7 @@ export default function PolyGlotLive() {
                     </button>
 
                     <button 
+                      data-testid="end-call"
                       onClick={() => {
                         if (window.speechSynthesis) window.speechSynthesis.cancel();
                         setCurrentView('SCORECARD');
@@ -1005,7 +875,7 @@ export default function PolyGlotLive() {
 
               {/* 4. POST-SCENARIO FLUENCY SCORECARD */}
               {currentView === 'SCORECARD' && (
-                <div id="view-scorecard" className="flex-1 flex flex-col pb-24">
+                <div id="view-scorecard" data-testid="scorecard" className="flex-1 flex flex-col pb-24">
                   {/* Top Bar */}
                   <div className="flex justify-between items-center px-6 py-4 border-b border-slate-50 bg-white">
                     <h2 className="font-display font-bold text-slate-800">Session Summary</h2>
@@ -1029,7 +899,7 @@ export default function PolyGlotLive() {
                           <circle className="text-blue-500" cx="80" cy="80" fill="none" r="70" stroke="currentColor" strokeWidth="12" strokeDasharray="440" strokeDashoffset="52.8" strokeLinecap="round"></circle>
                         </svg>
                         <div className="absolute flex flex-col items-center justify-center">
-                          <span className="font-display font-bold text-4xl text-transparent bg-clip-text bg-gradient-to-r from-[#0066FF] to-[#00F0FF]">88%</span>
+                          <span data-testid="fluency-score" className="font-display font-bold text-4xl text-transparent bg-clip-text bg-gradient-to-r from-[#0066FF] to-[#00F0FF]">{computeFluencyScore(objectivesCompleted, selectedScenario.objectives)}%</span>
                           <span className="text-[10px] text-slate-400 font-semibold font-mono tracking-wider uppercase mt-1">Fluency Score</span>
                         </div>
                       </div>
@@ -1040,7 +910,7 @@ export default function PolyGlotLive() {
                       <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col gap-2">
                         <span className="text-xs font-bold text-slate-400 font-mono tracking-wider uppercase">Grammar</span>
                         <div className="flex justify-between items-end">
-                          <span className="font-display font-bold text-2xl text-slate-800">92%</span>
+                          <span className="font-display font-bold text-2xl text-slate-800">{computeGrammarScore(grammarToasts.length)}%</span>
                           <span className="text-[10px] text-emerald-500 font-semibold font-mono bg-emerald-50 px-1.5 py-0.5 rounded-md">Excellent</span>
                         </div>
                       </div>
@@ -1326,7 +1196,7 @@ export default function PolyGlotLive() {
             
             {/* 9. LANDING PAGE & WEB STUDIO PREVIEW (DESKTOP MARKETING) */}
             {currentView === 'WEB_LANDING' && (
-              <div id="view-web-landing" className="flex-1 flex flex-col overflow-y-auto">
+              <div id="view-web-landing" data-testid="web-landing" className="flex-1 flex flex-col overflow-y-auto">
                 {/* Hero Banner */}
                 <section className="py-16 px-8 max-w-4xl mx-auto text-center flex flex-col items-center justify-center">
                   <h1 className="font-display text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-none mb-6">
@@ -1431,7 +1301,7 @@ export default function PolyGlotLive() {
 
             {/* 10. STANDALONE WEB STUDIO DASHBOARD (DESKTOP WORKSPACE) */}
             {currentView === 'WEB_STUDIO' && (
-              <div id="view-web-studio" className="flex-1 flex overflow-hidden">
+              <div id="view-web-studio" data-testid="web-studio" className="flex-1 flex overflow-hidden">
                 
                 {/* Left Pane: Voice focus canvas */}
                 <div className="flex-1 flex flex-col bg-slate-50 border-r border-slate-100 relative">
