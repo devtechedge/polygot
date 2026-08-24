@@ -54,7 +54,7 @@ This is the **only** public repo for the project.
 | Data | Static scenario catalog — not Prisma, not a database |
 | Auth | None |
 | Hosting | Vercel |
-| CI | GitHub Actions — Vitest, `tsc`, Playwright (runs pending ticket 4688107) |
+| CI | GitHub Actions — Vitest, `tsc`, Playwright |
 
 ---
 
