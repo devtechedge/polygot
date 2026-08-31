@@ -31,6 +31,7 @@ import { SCENARIOS, type Scenario } from '@/lib/scenarios';
 import { applyObjectives, computeFluencyScore, computeGrammarScore } from '@/lib/objectives';
 import { getWelcome } from '@/lib/welcome';
 import { getHints } from '@/lib/hints';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function PolyGlotLive() {
   // Device & Layout toggles (User can switch between seeing standard desktop landing vs mobile app views)
@@ -328,29 +329,32 @@ export default function PolyGlotLive() {
         </div>
 
         {/* Form factor state controllers */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-full text-xs font-medium">
-          <button 
-            id="mobile-view-btn" data-testid="device-mobile"
-            onClick={() => {
-              setDeviceMode('MOBILE');
-              if (currentView === 'WEB_LANDING' || currentView === 'WEB_STUDIO') {
-                setCurrentView('HUB');
-              }
-            }}
-            className={`px-4 py-1.5 rounded-full transition-all ${deviceMode === 'MOBILE' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-          >
-            📱 Mobile App Preview
-          </button>
-          <button 
-            id="desktop-view-btn" data-testid="device-desktop"
-            onClick={() => {
-              setDeviceMode('DESKTOP');
-              setCurrentView('WEB_LANDING');
-            }}
-            className={`px-4 py-1.5 rounded-full transition-all ${deviceMode === 'DESKTOP' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-          >
-            💻 Desktop Web Studio
-          </button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-full text-xs font-medium">
+            <button 
+              id="mobile-view-btn" data-testid="device-mobile"
+              onClick={() => {
+                setDeviceMode('MOBILE');
+                if (currentView === 'WEB_LANDING' || currentView === 'WEB_STUDIO') {
+                  setCurrentView('HUB');
+                }
+              }}
+              className={`px-4 py-1.5 rounded-full transition-all ${deviceMode === 'MOBILE' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+            >
+              📱 Mobile App Preview
+            </button>
+            <button 
+              id="desktop-view-btn" data-testid="device-desktop"
+              onClick={() => {
+                setDeviceMode('DESKTOP');
+                setCurrentView('WEB_LANDING');
+              }}
+              className={`px-4 py-1.5 rounded-full transition-all ${deviceMode === 'DESKTOP' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+            >
+              💻 Desktop Web Studio
+            </button>
+          </div>
+          <ThemeToggle />
         </div>
       </div>
 
