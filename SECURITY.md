@@ -1,6 +1,6 @@
 # Security Assessment — PolyGlot Live
 
-**Date:** 2026-08-24  
+**Date:** 2026-09-06  
 **Scope:** Auth, XSS, injection, CORS, secrets, speech, third-party APIs  
 **Context:** Public deploy is a **portfolio demo** on Vercel. `POST /api/chat` returns canned host replies when `GEMINI_API_KEY` is unset. There are no accounts.
 
@@ -99,3 +99,11 @@ A visitor can burn Gemini quota if a key is configured, because the route is una
 1. Unauthenticated Gemini proxy if a key is set on Vercel.
 2. Public demo replies are canned — they are not a live tutor.
 3. Browser speech APIs are origin-gated; they will not run in every embedded preview.
+
+## Repository visibility
+
+This repository is currently **public** for portfolio review. When the open-source
+build story is no longer needed, **the GitHub repo will go private**. Making the
+repo private reduces source disclosure; it does **not** replace strong production
+secrets, auth allow-lists, webhook signatures, or Vercel/Actions environment
+hygiene. Rotate any credential that was pasted into chat, tickets, or screenshots.
