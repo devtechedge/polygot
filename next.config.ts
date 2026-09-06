@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
     ],
   },
   transpilePackages: ['motion'],
-  ...(process.env.VERCEL ? {} : { output: 'standalone' as const }),,
+  ...(process.env.VERCEL ? {} : { output: 'standalone' as const }),
 
   async headers() {
     return [
