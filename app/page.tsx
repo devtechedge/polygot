@@ -359,10 +359,7 @@ export default function PolyGlotLive() {
       </div>
 
       <div className="flex-1 flex justify-center items-center p-0 md:p-6 bg-slate-50">
-        
-        {/* ========================================================= */}
         {/* MOBILE VIEWPORT SIMULATOR FRAME */}
-        {/* ========================================================= */}
         {deviceMode === 'MOBILE' && (
           <div data-testid="phone-frame" className="w-full max-w-md bg-white min-h-[760px] md:min-h-[820px] md:rounded-[40px] md:shadow-2xl md:border-[10px] md:border-slate-900 relative flex flex-col overflow-hidden font-sans">
             
@@ -1191,10 +1188,7 @@ export default function PolyGlotLive() {
             </div>
           </div>
         )}
-
-        {/* ========================================================= */}
         {/* DESKTOP VIEWPORT SIMULATOR PANELS */}
-        {/* ========================================================= */}
         {deviceMode === 'DESKTOP' && (
           <div className="w-full max-w-7xl mx-auto flex flex-col bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-100 h-[calc(100vh-140px)] min-h-[700px]">
             
