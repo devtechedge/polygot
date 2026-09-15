@@ -1,6 +1,6 @@
 # PolyGlot Live
 
-Spanish speaking lab for learners who want live roleplay, not flashcards. Order tapas in Madrid, rent a bike in Barcelona, or sit a tech interview — then get IPA, grammar toasts, and a fluency scorecard.
+Spanish speaking lab for learners who want live roleplay, not flashcards. Order tapas in Madrid, rent a bike in Barcelona, or sit a tech interview - then get IPA, grammar toasts, and a fluency scorecard.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?logo=vercel)](https://polygot-snowy.vercel.app)
 [![CI](https://github.com/devtechedge/polygot/actions/workflows/ci.yml/badge.svg)](https://github.com/devtechedge/polygot/actions/workflows/ci.yml)
@@ -55,10 +55,10 @@ This is the **only** public repo for the project.
 | Frontend | Next.js 15 (App Router), React 19, TypeScript, Tailwind 4, Motion |
 | Speech | Web Speech API (`SpeechRecognition` + `speechSynthesis`) |
 | AI | Optional `@google/genai` (`gemini-2.5-flash`). Canned fallback in `lib/demo-chat.ts` |
-| Data | Static scenario catalog — not Prisma, not a database |
+| Data | Static scenario catalog - not Prisma, not a database |
 | Auth | None |
 | Hosting | Vercel |
-| CI | GitHub Actions — Vitest, `tsc`, Playwright |
+| CI | GitHub Actions - Vitest, `tsc`, Playwright |
 
 ---
 

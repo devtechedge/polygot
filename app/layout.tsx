@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'PolyGlot Live — Spanish speaking lab',
+  title: 'PolyGlot Live - Spanish speaking lab',
   description:
     'Live Spanish roleplay with AI hosts. Practice tapas orders, bike rentals, and interviews. IPA, grammar toasts, and a fluency scorecard.',
   icons: {

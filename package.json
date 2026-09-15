@@ -2,7 +2,7 @@
   "name": "polygot",
   "version": "1.0.0",
   "private": true,
-  "description": "PolyGlot Live — Spanish speaking lab with AI roleplay, IPA, grammar toasts, and a fluency scorecard.",
+  "description": "PolyGlot Live - Spanish speaking lab with AI roleplay, IPA, grammar toasts, and a fluency scorecard.",
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",

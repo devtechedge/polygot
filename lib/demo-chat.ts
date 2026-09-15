@@ -33,7 +33,7 @@ function genderCopa(text: string): GrammarCorrection | null {
     return {
       original: 'un copa',
       correction: 'una copa',
-      explanation: 'copa is feminine — una copa, not un copa.',
+      explanation: 'copa is feminine - una copa, not un copa.',
     }
   }
   return null

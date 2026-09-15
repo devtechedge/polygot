@@ -1,4 +1,4 @@
-# Security Assessment — PolyGlot Live
+# Security Assessment - PolyGlot Live
 
 **Date:** 2026-09-06  
 **Scope:** Auth, XSS, injection, CORS, secrets, speech, third-party APIs  
@@ -47,10 +47,10 @@
 | Path | Auth | Notes |
 |------|------|--------|
 | `POST /api/chat` | None | Parses body through `lib/validation.ts` (40 turns, 500 chars/turn, level allow-list) |
-| Missing `GEMINI_API_KEY` | — | Returns canned JSON from `lib/demo-chat.ts` with `demo: true` |
-| Live Gemini | — | Server-only key. Model is called with a JSON schema. Prompt is the capped transcript |
+| Missing `GEMINI_API_KEY` | - | Returns canned JSON from `lib/demo-chat.ts` with `demo: true` |
+| Live Gemini | - | Server-only key. Model is called with a JSON schema. Prompt is the capped transcript |
 
-Do not put the key in `NEXT_PUBLIC_*` — it would leak to the browser.
+Do not put the key in `NEXT_PUBLIC_*` - it would leak to the browser.
 
 A visitor can burn Gemini quota if a key is configured, because the route is unauthenticated. That is **accepted residual risk** for a portfolio demo. Rate-limit or require auth before treating this as production.
 
@@ -97,7 +97,7 @@ A visitor can burn Gemini quota if a key is configured, because the route is una
 ## Residual risk (accepted)
 
 1. Unauthenticated Gemini proxy if a key is set on Vercel.
-2. Public demo replies are canned — they are not a live tutor.
+2. Public demo replies are canned - they are not a live tutor.
 3. Browser speech APIs are origin-gated; they will not run in every embedded preview.
 
 ## Repository visibility
