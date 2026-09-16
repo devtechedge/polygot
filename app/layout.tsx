@@ -20,10 +20,26 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 })
 
+const PAGE_TITLE = 'PolyGlot Live - Spanish speaking lab';
+const PAGE_DESCRIPTION =
+  'Live Spanish roleplay with AI hosts. Practice tapas orders, bike rentals, and interviews. IPA, grammar toasts, and a fluency scorecard.';
+const SITE_URL = 'https://polygot-snowy.vercel.app';
+
 export const metadata: Metadata = {
-  title: 'PolyGlot Live - Spanish speaking lab',
-  description:
-    'Live Spanish roleplay with AI hosts. Practice tapas orders, bike rentals, and interviews. IPA, grammar toasts, and a fluency scorecard.',
+  title: PAGE_TITLE,
+  description: PAGE_DESCRIPTION,
+  // Shared links (LinkedIn, Slack, email) render a bare URL without these.
+  openGraph: {
+    title: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+    url: SITE_URL,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+  },
   icons: {
     icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
   },
